@@ -3,6 +3,7 @@
 #include "test_encoder.h"
 #include "test_mpu6050.h"
 #include "test_dual_motor_pid.h"
+#include "wifi_logger.h"
 
 volatile long motor1_enc_count = 0;
 volatile long motor2_enc_count = 0;
@@ -13,6 +14,7 @@ const bool RUN_ENCODER_TEST = false;
 const bool RUN_DUAL_PID_TEST = true;
 const bool RUN_MPU6050_TEST = false;
 const bool RUN_GPIO_RAW_TEST = false;
+const bool RUN_WIFI_LOG = true;  // set false to skip WiFi (serial only)
 
 void loopGpioRawTest() {
   static uint8_t prev7 = 255, prev10 = 255, prev8 = 255;
@@ -38,7 +40,10 @@ void loopGpioRawTest() {
 
 void setup() {
   Serial.begin(115200);
-  delay(200);
+  delay(500);
+  while (!Serial && millis() < 3000) delay(10);  // Wait for USB CDC
+
+  if (RUN_WIFI_LOG) { wifi_logger::init(); }
 
   if (RUN_GPIO_RAW_TEST) {
     pinMode(7,  INPUT_PULLUP);

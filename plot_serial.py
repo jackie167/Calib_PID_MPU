@@ -4,6 +4,7 @@ import csv
 import sys
 import time
 import select
+import socket
 import termios
 import tty
 
@@ -20,11 +21,13 @@ except ImportError:
 
 
 def parse_args():
-    p = argparse.ArgumentParser(description="Live plot CSV data from serial.")
+    p = argparse.ArgumentParser(description="Live plot CSV data from serial or UDP.")
     p.add_argument("--port", default="/dev/cu.usbmodem1101", help="Serial port")
     p.add_argument("--baud", type=int, default=115200, help="Baud rate")
     p.add_argument("--max-points", type=int, default=300, help="Max points to keep")
     p.add_argument("--send-keys", action="store_true", help="Send single-key commands to serial")
+    p.add_argument("--udp", action="store_true", help="Receive data via UDP instead of serial")
+    p.add_argument("--udp-port", type=int, default=4210, help="UDP port to listen on")
     return p.parse_args()
 
 
@@ -35,8 +38,20 @@ def main():
         print("  python3 -m pip install pyserial matplotlib", file=sys.stderr)
         sys.exit(1)
 
-    ser = serial.Serial(args.port, args.baud, timeout=0.1)
-    time.sleep(0.2)
+    # --- input source: UDP or Serial ---
+    udp_sock = None
+    ser = None
+    if args.udp:
+        udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        udp_sock.bind(("0.0.0.0", args.udp_port))
+        udp_sock.setblocking(False)
+        print(f"[UDP] Listening on port {args.udp_port} ...")
+    else:
+        if serial is None:
+            print("pyserial not installed", file=sys.stderr)
+            sys.exit(1)
+        ser = serial.Serial(args.port, args.baud, timeout=0.1)
+        time.sleep(0.2)
 
     headers = None
     data = {}
@@ -73,11 +88,30 @@ def main():
             if k == "q":
                 plt.close("all")
                 return []
-            ser.write(k.encode("utf-8"))
+            if ser:
+                ser.write(k.encode("utf-8"))
+        # read lines from UDP or serial
+        lines_in = []
+        if udp_sock:
+            try:
+                while True:
+                    data, _ = udp_sock.recvfrom(4096)
+                    for l in data.decode(errors="ignore").splitlines():
+                        l = l.strip()
+                        if l:
+                            lines_in.append(l)
+            except BlockingIOError:
+                pass
+        else:
+            while True:
+                line = ser.readline().decode(errors="ignore").strip()
+                if not line:
+                    break
+                lines_in.append(line)
         while True:
-            line = ser.readline().decode(errors="ignore").strip()
-            if not line:
+            if not lines_in:
                 break
+            line = lines_in.pop(0)
             # Header
             if headers is None:
                 if "," in line and "rpm" in line:

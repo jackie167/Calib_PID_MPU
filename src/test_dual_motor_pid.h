@@ -6,6 +6,7 @@
 #include "motor_2_config.h"
 #include "motor_driver.h"
 #include "pid.h"
+#include "wifi_logger.h"
 
 extern const bool PLOTTER_MODE;
 extern const bool PLOTTER_CSV;
@@ -170,8 +171,8 @@ inline void testDualMotorPid() {
 
   if (PLOTTER_MODE && PLOTTER_CSV) {
     if (last_plotter_header == 0 || now - last_plotter_header >= 5000) {
-      Serial.println("m1_rpm,m1_target,m1_pwm,m1_enc,m2_rpm,m2_target,m2_pwm,m2_enc");
-      Serial.println();
+      wifi_logger::println("m1_rpm,m1_target,m1_pwm,m1_enc,m2_rpm,m2_target,m2_pwm,m2_enc");
+      wifi_logger::println("");
       last_plotter_header = now;
     }
   }
@@ -179,21 +180,15 @@ inline void testDualMotorPid() {
   if (now - last_report >= 500) {
     last_report = now;
     if (PLOTTER_MODE && PLOTTER_CSV) {
-      Serial.print(motor1.last_rpm, 1);
-      Serial.print(',');
-      Serial.print(motor1.target_rpm, 1);
-      Serial.print(',');
-      Serial.print(motor1.pwm_out);
-      Serial.print(',');
-      Serial.print(motor1_enc_count);
-      Serial.print(',');
-      Serial.print(motor2.last_rpm, 1);
-      Serial.print(',');
-      Serial.print(motor2.target_rpm, 1);
-      Serial.print(',');
-      Serial.print(motor2.pwm_out);
-      Serial.print(',');
-      Serial.println(motor2_enc_count);
+      String row = String(motor1.last_rpm, 1) + "," +
+                   String(motor1.target_rpm, 1) + "," +
+                   String(motor1.pwm_out) + "," +
+                   String(motor1_enc_count) + "," +
+                   String(motor2.last_rpm, 1) + "," +
+                   String(motor2.target_rpm, 1) + "," +
+                   String(motor2.pwm_out) + "," +
+                   String(motor2_enc_count);
+      wifi_logger::println(row);
     }
   }
 }
