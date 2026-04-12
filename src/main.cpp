@@ -2,6 +2,7 @@
 #include "motor_2_config.h"
 #include "pid.h"
 #include "motor_driver.h"
+#include "test_mpu6050.h"
 #include "test_pid_speed.h"
 
 // XIAO ESP32-C3 Motor1 + Encoder1 only
@@ -20,6 +21,8 @@ volatile long enc_count = 0;
 
 const bool PLOTTER_MODE = true;
 const bool PLOTTER_CSV = true;
+const bool RUN_PID_TEST = false;
+const bool RUN_MPU6050_TEST = true;
 
 void setup() {
   Serial.begin(115200);
@@ -40,9 +43,18 @@ void setup() {
   pinMode(ENC_A_PIN, INPUT_PULLUP);
   pinMode(ENC_B_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(ENC_A_PIN), onEncA, CHANGE);
+
+  if (RUN_MPU6050_TEST) {
+    mpu6050_test::initMpu6050();
+  }
 }
 
 void loop() {
-  testPidSpeed();
-  // testSomethingElse();
+  if (RUN_PID_TEST) {
+    testPidSpeed();
+  }
+
+  if (RUN_MPU6050_TEST) {
+    mpu6050_test::testMpu6050();
+  }
 }
