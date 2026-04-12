@@ -1,5 +1,7 @@
 #pragma once
 
+#include "motor_config_types.h"
+
 // ============================================================
 // Motor Config: DC Motor #2
 // Board: XIAO ESP32C3
@@ -11,39 +13,33 @@
 //          (caused by ISR bug + RPM targets too low in old dual-motor code)
 // ============================================================
 
-// --- Pins (same as Motor1) ---
-#define MOTOR_IN1_PIN     2
-#define MOTOR_IN2_PIN     3
-#define MOTOR_ENC_A_PIN   21
-#define MOTOR_ENC_B_PIN   20
+namespace motor2_config {
 
-// --- PWM ---
-#define MOTOR_PWM_CH1     0
-#define MOTOR_PWM_CH2     1
-#define MOTOR_PWM_FREQ    20000
-#define MOTOR_PWM_RES     8
+constexpr MotorConfig CONFIG = {
+	"M2",
+	4,        // D2 -> IN3
+	5,        // D3 -> IN4
+	8,        // D8 -> Encoder A
+	9,        // D9 -> Encoder B
+	2,
+	3,
+	20000,
+	8,
+	18,
+	500,
+	50,
+	0.04f,
+	0.05f,
+	0.0f,
+	107.0f,
+	0.30f,
+	95,
+	115,
+	130,
+	3000.0f,
+	8000.0f,
+	5000.0f,
+	6000.0f,
+};
 
-// --- Encoder (same 9-slot as Motor1) ---
-#define MOTOR_PULSES_PER_REV  18
-#define MOTOR_RPM_WINDOW_MS   1200
-#define MOTOR_SAMPLE_MS       50
-
-// --- PID Gains (confirmed working — same as Motor1) ---
-#define MOTOR_KP        0.04f
-#define MOTOR_KI        0.08f
-#define MOTOR_KD        0.0f
-#define MOTOR_BASE_PWM  135.0f
-
-// --- EMA Filter ---
-#define MOTOR_EMA_ALPHA     0.15f
-
-// --- Stale Encoder Recovery PWM ---
-#define MOTOR_STALE_PWM_1   155
-#define MOTOR_STALE_PWM_3   170
-#define MOTOR_STALE_PWM_5   190
-
-// --- Operating Range (confirmed) ---
-#define MOTOR_RPM_MIN   1000.0f
-#define MOTOR_RPM_MAX   5000.0f
-#define MOTOR_RPM_STEP1 1300.0f
-#define MOTOR_RPM_STEP2 1500.0f
+}  // namespace motor2_config
