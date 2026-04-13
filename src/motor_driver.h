@@ -5,12 +5,20 @@
 
 extern volatile long motor1_enc_count;
 extern volatile long motor2_enc_count;
+extern volatile unsigned long motor1_last_isr_us;
+extern volatile unsigned long motor2_last_isr_us;
 
 inline void IRAM_ATTR onMotor1EncA() {
+  unsigned long now = micros();
+  if (now - motor1_last_isr_us < 150) return;
+  motor1_last_isr_us = now;
   motor1_enc_count++;
 }
 
 inline void IRAM_ATTR onMotor2EncA() {
+  unsigned long now = micros();
+  if (now - motor2_last_isr_us < 150) return;
+  motor2_last_isr_us = now;
   motor2_enc_count++;
 }
 
@@ -26,7 +34,7 @@ inline void initMotorDriver(const MotorConfig &config) {
 }
 
 inline void attachMotorEncoder(const MotorConfig &config, void (*isr)()) {
-  attachInterrupt(digitalPinToInterrupt(config.enc_a_pin), isr, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(config.enc_a_pin), isr, RISING);
 }
 
 inline long readEncoderCount(volatile long &enc_count) {
@@ -45,4 +53,3 @@ inline void setMotorPwm(const MotorConfig &config, int speed) {
     ledcWrite(config.pwm_ch2, -speed);
   }
 }
-
