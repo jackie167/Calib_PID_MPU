@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include "motor_config_types.h"
+#include "motor_2_config.h"
 
 extern volatile long motor1_enc_count;
 extern volatile long motor2_enc_count;
@@ -45,11 +46,15 @@ inline long readEncoderCount(volatile long &enc_count) {
 }
 
 inline void setMotorPwm(const MotorConfig &config, int speed) {
-  if (speed >= 0) {
-    ledcWrite(config.pwm_ch1, speed);
+  const bool invert_direction = (config.in1_pin == motor2_config::CONFIG.in1_pin &&
+                                 config.in2_pin == motor2_config::CONFIG.in2_pin);
+  const int applied_speed = invert_direction ? -speed : speed;
+
+  if (applied_speed >= 0) {
+    ledcWrite(config.pwm_ch1, applied_speed);
     ledcWrite(config.pwm_ch2, 0);
   } else {
     ledcWrite(config.pwm_ch1, 0);
-    ledcWrite(config.pwm_ch2, -speed);
+    ledcWrite(config.pwm_ch2, -applied_speed);
   }
 }

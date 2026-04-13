@@ -256,7 +256,7 @@ inline void printHelp() {
   Serial.println("m3 : pwm sweep");
   Serial.println("m4 : rpm test");
   Serial.println("m5 : base pwm test");
-  Serial.println("m6 : sync test");
+  Serial.println("m6 : manual sync test");
   Serial.println("m7 : soft sync PI test");
   Serial.println("s1 : select motor 1");
   Serial.println("s2 : select motor 2");
